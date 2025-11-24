@@ -19,7 +19,7 @@ app.use(cors(corsOptions))
 app.use("/api",routes)
 
 app.get("/api", (_, res) => {
-  res.status(200).json({ status: "ok" });
+  res.status(200).json({ status: "ok"});
 });
 
 

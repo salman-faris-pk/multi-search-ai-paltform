@@ -1,4 +1,4 @@
-import { AIMessage, BaseMessage, HumanMessage } from 'langchain';
+import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { WebSocket } from 'ws'
 import handleWebSearch from '../agents/webSearchAgent.js';
 

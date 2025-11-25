@@ -104,13 +104,13 @@ const handleStream = async (
   }
 };
 
-const basicWenSearchRetrievalChain= RunnableSequence.from([
+const basicWebSearchRetrievalChain= RunnableSequence.from([
     PromptTemplate.fromTemplate(basicSearchRetrieverPrompt),
     llm,
     strParser,
     RunnableLambda.from(async(input:string) => {
 
-        if(input === 'not_needed'){
+        if(input === 'not_needed'){   //from llm respose acording to given propmt
             return{query:"",docs: []}
         };
 
@@ -141,7 +141,7 @@ const basicSearchAnsweringChain= RunnableSequence.from([
                 query: input.query,
                 chat_history: formatChatHistoryAsString(input.chat_history)
             }),
-            basicWenSearchRetrievalChain
+            basicWebSearchRetrievalChain
                .pipe(rerankDocs)
                .withConfig({
                 runName: "FinalSourceRetriever"
@@ -150,9 +150,9 @@ const basicSearchAnsweringChain= RunnableSequence.from([
         ]),
     }),
     ChatPromptTemplate.fromMessages([
-      ["system", basicWebSearchResponsePrompt],
-      new MessagesPlaceholder("chat_history"),
-      ['user', "{query}"]
+      ["system", basicWebSearchResponsePrompt], //The system message, which gives the LLM its persona and instructions
+      new MessagesPlaceholder("chat_history"),  //This slot is filled with the entire past conversation, so the LLM knows what was said before.
+      ['user', "{query}"]      //This slot is filled with the user's latest question.
     ]),
     Chatllm,
     strParser,
@@ -198,4 +198,5 @@ const handleWebSearch=(message: string, history: BaseMessage[])=>{
 
 
 export default handleWebSearch;
+
 

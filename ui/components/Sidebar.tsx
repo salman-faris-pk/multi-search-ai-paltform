@@ -10,14 +10,14 @@ import {
 import Layout from "./Layout";
 import { useSelectedLayoutSegments } from "next/navigation";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import SettingsDialog from "./SettingsDialog";
 
 const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const segments = useSelectedLayoutSegments();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
-  const navLinks = useMemo(() => [
+  const navLinks =[
      {
       icon: Home,
       href: "/",
@@ -36,7 +36,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
       active: segments.includes("library"),
       label: "Library",
     },
-  ], [segments]);
+  ];
 
   return (
     <div>

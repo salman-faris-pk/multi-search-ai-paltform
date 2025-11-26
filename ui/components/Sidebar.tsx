@@ -39,14 +39,14 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
   ];
 
   return (
-    <div>
+    <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-20 lg:flex-col">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-20 lg:flex-col">
         <div className="flex grow flex-col items-center justify-between gap-y-5 overflow-y-auto bg-[#111111] px-2 py-8">
           <Link href="/">
             <SquareIcon className="text-white cursor-pointer" />
           </Link>
-          <div className="flex flex-col items-center gap-y-3 w-full">
+          <nav className="flex flex-col items-center gap-y-3 w-full">
             {navLinks.map((link, i) => (
               <Link
                 key={`desktop-${i}-${link.active}`}
@@ -62,7 +62,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
                 )}
               </Link>
             ))}
-          </div>
+          </nav>
           <Settings
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             className="text-white cursor-pointer"
@@ -72,10 +72,10 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             setIsOpen={setIsSettingsOpen}
           />
         </div>
-      </div>
+      </aside>
       
       {/* Mobile Navigation */}
-      <div className="lg:hidden fixed bottom-0 flex flex-row w-full z-50 items-center gap-x-6 bg-[#111111] px-4 py-4 shadow-sm">
+      <nav className="lg:hidden fixed bottom-0 flex flex-row w-full z-50 items-center gap-x-6 bg-[#111111] px-4 py-4 shadow-sm">
         {navLinks.map((link, i) => (
           <Link
             key={`mobile-${i}-${link.active}`} 
@@ -92,11 +92,11 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             <p className="text-xs">{link.label}</p>
           </Link>
         ))}
-      </div>
+      </nav>
       
       <Layout>{children}</Layout>
-    </div>
-  );
+    </>
+  )
 };
 
 export default Sidebar;

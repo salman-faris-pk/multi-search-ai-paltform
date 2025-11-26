@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import EmptyChat from "./EmptyChat";
 import Chat from "./Chat";
 import Navbar from "./Navbar";
-// import { getSuggestions } from "@/lib/actions";
 
 export type Message = {
   id: string;
@@ -44,6 +43,7 @@ const ChatWindow = () => {
   const [loading, setLoading] = useState(false);
   const [messageAppeared, setMessageAppeared] = useState(false);
   const [focusMode, setFocusMode] = useState("webSearch");
+
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -96,13 +96,14 @@ const ChatWindow = () => {
               sources: sources,
               createdAt: new Date(),
             },
-          ]);
-          added = true;   //doesn't run again for the same stream.
+          ]);             //Server sends "sources" only at the start.means only one time
+          added = true;
         }
-        setMessageAppeared(true);
+        setMessageAppeared(true);  
       }
 
-      if (data.type === "message") {
+      if (data.type === "message") {   // Server sends many "message" events — one per chunk of the response.
+                                        // This runs repeatedly until all chunks are sent and "messageEnd" arrives.
         if (!added) {
           setMessages((prevMessages) => [
             ...prevMessages,
@@ -116,8 +117,8 @@ const ChatWindow = () => {
           ]);
           added = true;
         }
-
-        setMessages((prev) =>
+                               // Each chunk uses the same messageId, so this updates the same bubble every time.
+        setMessages((prev) =>  // Find the assistant message with this messageId and append the new chunk to its content.
           prev.map((message) => {
             if (message.id === data.messageId) {
               return { ...message, content: message.content + data.data };
@@ -133,8 +134,8 @@ const ChatWindow = () => {
       if (data.type === "messageEnd") {
         setChatHistory((prevHistory) => [
           ...prevHistory,
-          ["human", message],
-          ["assistant", receivedMessage],
+          ["human", message],   //when message  chunks and all users query added to this state
+          ["assistant", receivedMessage],  //all assistant replies too
         ]);
         ws?.removeEventListener("message", messageHandler);
         setLoading(false);
@@ -145,24 +146,7 @@ const ChatWindow = () => {
     ws?.addEventListener("message", messageHandler);
   };
 
-  const rewrite = (messageId: string) => {
-    const index = messages.findIndex((msg) => msg.id === messageId);
-
-    if (index === -1) return;
-
-    const message = messages[index - 1];
-
-    setMessages((prev) => {
-      return [...prev.slice(0, messages.length > 2 ? index - 1 : 0)];
-    });
-
-    setChatHistory((prev) => {
-      return [...prev.slice(0, messages.length > 2 ? index - 1 : 0)];
-    });
-
-    sendMessage(message.content);
-  };
-
+  
   return (
     <div>
       {messages.length > 0 ? (

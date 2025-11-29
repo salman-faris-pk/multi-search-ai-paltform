@@ -50,6 +50,7 @@ const ChatWindow = () => {
     messagesRef.current = messages;
   }, [messages]);
 
+
   const sendMessage = async (message: string) => {
     if (loading) return;
 
@@ -69,7 +70,7 @@ const ChatWindow = () => {
       })
     );
 
-    setMessages((prevMessages) => [   // for optimistic ui
+    setMessages((prevMessages) => [   // for optimistic ui upadte (dummy..)
       ...prevMessages,
       {
         content: message,
@@ -149,6 +150,24 @@ const ChatWindow = () => {
 
 
 
+  const regenerate= (messageId:string)=>{  
+      const index= messages.findIndex((msg)=> msg.id === messageId);
+
+      if(index === - 1) return;
+
+      const message=messages[index - 1]; //gets the previous user message
+
+      setMessages((prev) => {
+         return [...prev.slice(0, messages.length > 2 ? index - 1 : 0)]   //it removes the selected one index AND all messages after it.if not greater than  2 then all deletes
+      });
+
+      setChatHistory((prev)=> {
+        return [...prev.slice(0,messages.length > 2 ? index - 1 : 0)]
+      });
+
+      sendMessage(message.content)
+  };
+
   
   return (
     <div>
@@ -160,6 +179,7 @@ const ChatWindow = () => {
             messageAppeared={messageAppeared}
             loading={loading}
             sendMessage={sendMessage}
+            rewrite={regenerate}
           />
         </>
       ) : (

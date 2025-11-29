@@ -51,7 +51,7 @@ const rerankDocs= async({query,docs}:{query:string,docs: Document[]})=>{
         ]);
 
         const similarity= docEmbeddings.map((docEmbdeding,i) => {
-             const sim= computeSimilarity(queryEmbedding, docEmbdeding);
+             const sim= computeSimilarity(queryEmbedding, docEmbdeding);  //maybe multiple docemnts,How relevant the document is to the query returns
 
              return {
                 index: i,
@@ -105,7 +105,7 @@ const handleStream = async (
 };
 
 const basicWebSearchRetrievalChain= RunnableSequence.from([
-    PromptTemplate.fromTemplate(basicSearchRetrieverPrompt),
+    PromptTemplate.fromTemplate(basicSearchRetrieverPrompt), /// for best query from llm ,means normal query --> renavated query
     llm,
     strParser,
     RunnableLambda.from(async(input:string) => {

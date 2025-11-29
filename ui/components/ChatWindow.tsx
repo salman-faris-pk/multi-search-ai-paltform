@@ -36,6 +36,7 @@ const useSocket = (url: string) => {
 };
 
 const ChatWindow = () => {
+
   const ws = useSocket(process.env.NEXT_PUBLIC_WS_URL!);
   const [chatHistory, setChatHistory] = useState<[string, string][]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -118,7 +119,7 @@ const ChatWindow = () => {
           added = true;
         }
                                // Each chunk uses the same messageId, so this updates the same bubble every time.
-        setMessages((prev) =>  // Find the assistant message with this messageId and append the new chunk to its content.
+        setMessages((prev) =>  // Finalizing!! Finding the assistant message with this messageId and append the new chunk to its content.
           prev.map((message) => {
             if (message.id === data.messageId) {
               return { ...message, content: message.content + data.data };

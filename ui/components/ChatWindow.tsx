@@ -147,13 +147,20 @@ const ChatWindow = () => {
     ws?.addEventListener("message", messageHandler);
   };
 
+
+
   
   return (
     <div>
       {messages.length > 0 ? (
         <>
           <Navbar />
-          <Chat />
+          <Chat 
+            messages={messages}
+            messageAppeared={messageAppeared}
+            loading={loading}
+            sendMessage={sendMessage}
+          />
         </>
       ) : (
         <EmptyChat

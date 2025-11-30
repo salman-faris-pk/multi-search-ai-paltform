@@ -10,7 +10,7 @@ services:
     networks:
       - future-search
 
-  search-backend:
+  future-search-backend:
     build:
       context: .
       dockerfile: backend.dockerfile

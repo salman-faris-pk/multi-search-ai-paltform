@@ -1,6 +1,8 @@
 import { RefObject, useState } from "react";
 import { Message } from "./ChatWindow";
 import { cn } from "@/lib/utils";
+import { BookCopy } from "lucide-react";
+import MessageSources from "./MessageSources";
 
 
 
@@ -37,6 +39,30 @@ const MessageBox = ({
                  </h2>
             </div>
         )}
+
+        {message.role === "assistant" && (
+          <div className="flex flex-col space-y-9 lg:space-y-0 lg:flex-row lg:justify-between lg:space-x-9">
+              <div ref={dividerRef} className="flex flex-col space-y-6 w-full lg:w-9/12">
+
+                  {message.sources && message.sources.length > 0 && (
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex flex-row items-center space-x-2">
+                        <BookCopy className="text-white" size={20} />
+                        <h3 className="text-white font-medium text-xl">Sources</h3>
+                      </div>
+                      <MessageSources  sources={message.sources}/>
+                     </div>
+                  )}
+                  <div>
+                  </div>
+              </div>
+          </div>
+        )}
+
+
+
+
+
 
     </div>
   )

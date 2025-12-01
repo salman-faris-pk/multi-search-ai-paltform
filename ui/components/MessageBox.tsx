@@ -1,9 +1,10 @@
-import { RefObject, useState } from "react";
+import { RefObject, useMemo } from "react";
 import { Message } from "./ChatWindow";
 import { cn } from "@/lib/utils";
 import { BookCopy, Disc3, Share } from "lucide-react";
 import MessageSources from "./MessageSources";
 import ReactMarkdown from "react-markdown";
+import Rewrite from "@/messageActions/Rewrite";
 
 
 interface MessageBoxProps{
@@ -28,7 +29,42 @@ const MessageBox = ({
     sendMessage
    }:MessageBoxProps) => {
 
-    const [parsedMessage,setParsedMessage]=useState(message.content);
+
+     const { parsedMessage, speechMessage, suggestions } = useMemo(() => {
+
+    let parsedMsg = message.content;
+    let speechMsg = message.content;
+    let suggestionList: string[] = [];
+
+    if (message.role === "assistant" && message?.sources && message.sources.length > 0) {
+      const regex = /\[(\d+)\]/;
+      
+      speechMsg = message.content.replace(regex, "");
+      
+      parsedMsg = message.content.replace(
+        regex,
+        (_, number) => {
+          const url = message.sources?.[number - 1]?.metadata?.url || "#";
+          return ` [${number}](${url}) `;
+        }
+      );
+      
+      suggestionList = [
+        "tell me about his products at apple",
+        "tell me about this personal journey",
+      ];
+    }
+
+    return {
+      parsedMessage: parsedMsg,
+      speechMessage: speechMsg,
+      suggestions: suggestionList
+    };
+  }, [message.content, message.sources, message.role]);
+
+
+    
+     
 
   return (
     <div>
@@ -66,8 +102,21 @@ const MessageBox = ({
                 />
                 <h3 className="text-white font-medium text-xl">Answer</h3>
               </div>
-              <div className="prose max-w-none wrap-break-word prose-invert prose-p:leading-relaxed prose-pre:p-0 text-white text-sm md:text-base font-medium">
-                <ReactMarkdown>{parsedMessage}</ReactMarkdown>
+
+               <div className="prose max-w-none wrap-break-word prose-invert prose-p:leading-relaxed prose-pre:p-0 text-white text-sm md:text-base font-medium">
+                <ReactMarkdown 
+                  components={{
+                    a: (props) => (
+                      <a 
+                        {...props} 
+                        target="_blank" 
+                        className="bg-[#1C1C1C] px-1 rounded ml-1 no-underline text-xs text-white/70 relative hover:text-white hover:bg-[#2a2a2a] transition-colors"
+                      />
+                    )
+                  }}
+                >
+                  {parsedMessage}
+                </ReactMarkdown>
               </div>
               
               {!loading && (
@@ -76,7 +125,7 @@ const MessageBox = ({
                      <button className="p-2 text-white/70 rounded-xl hover:bg-[#1c1c1c] transition duration-200 hover:text-white">
                       <Share size={18} />
                     </button>
-                      
+                    <Rewrite  rewrite={rewrite} messageId={message.id}/>
                     </div>
                 </div>
               )}

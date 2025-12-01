@@ -60,7 +60,7 @@ const ChatWindow = () => {
     let sources: Document[] | undefined = undefined;
     let receivedMessage = "";
     let added = false;
-
+ 
     ws?.send(
       JSON.stringify({
         type: "message",

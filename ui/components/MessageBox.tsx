@@ -1,10 +1,11 @@
 import { RefObject, useMemo } from "react";
 import { Message } from "./ChatWindow";
 import { cn } from "@/lib/utils";
-import { BookCopy, Disc3, Share } from "lucide-react";
+import { BookCopy, Disc3, FilePen, Share } from "lucide-react";
 import MessageSources from "./MessageSources";
 import ReactMarkdown from "react-markdown";
 import Rewrite from "@/messageActions/Rewrite";
+import Copy from "@/messageActions/Copy";
 
 
 interface MessageBoxProps{
@@ -127,11 +128,21 @@ const MessageBox = ({
                     </button>
                     <Rewrite  rewrite={rewrite} messageId={message.id}/>
                     </div>
+                    <div className="flex flex-row items-center space-x-1">
+                       <Copy initilaMessageContent={message.content} message={message}/>
+                        <button className="p-2 text-white/70 rounded-xl hover:bg-[#1c1c1c] transition duration-200 hover:text-white">
+                           <FilePen size={18}/>
+                        </button>
+                    </div>
                 </div>
               )}
 
-
+              {/*sugestions*/}
             </div>
+          </div>
+
+          <div className="lg:sticky lg:top-20 flex flex-col items-center space-y-3 w-full lg:w-3/12 z-30 h-full pb-4">
+               
           </div>
         </div>
       )}

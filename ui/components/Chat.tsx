@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Message } from "./ChatWindow"
 import MessageBoxLoading from "./MessageBoxLoading";
 import MessageBox from "./MessageBox";
+import MessageInput from "./MessageInput";
 
 
 
@@ -78,8 +79,12 @@ const Chat = ({messages,sendMessage,loading,messageAppeared,rewrite}:ChatProps) 
 
         {loading && !messageAppeared && <MessageBoxLoading/>}
 
-
-
+        <div  ref={messageEnd} className="h-0" />
+        {dividerWidth > 0 && (
+          <div className="bottom-24 lg:bottom-0 fixed z-40" style={{ width: dividerWidth}}>
+              <MessageInput  sendMessage={sendMessage} loading={loading}/>
+         </div> 
+        )}
     </div>
   )
 }

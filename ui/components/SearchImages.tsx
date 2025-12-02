@@ -25,6 +25,51 @@ const SearchImages = ({
   const [open, setOpen] = useState(false);
   const [slides, setSlides] = useState<SlideImage[]>([]);
 
+ 
+
+   const handleSearchImages = async () => {
+      if (loading) return;
+    
+    try {
+      setLoading(true);
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/images`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          chat_history
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch images: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (!data.images || !Array.isArray(data.images)) {
+        throw new Error('Invalid response format');
+      };
+
+      const imagesArray = data.images;
+      setImages(imagesArray);
+      
+      const newSlides = imagesArray.map((image: ImageType) => ({
+        src: image.img_src,
+      }));
+      setSlides(newSlides);
+      
+    } catch (err) {
+      console.error('Error fetching images:', err);
+      setImages(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const openImage = (i: number) => {
     setOpen(true);
     setSlides([
@@ -38,33 +83,7 @@ const SearchImages = ({
     <>
       {!loading && images === null && (
         <button
-          onClick={async () => {
-            setLoading(true);
-            const res = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/images`,
-              {
-                method: "POST",
-                headers: { "Content-type": "application/json" },
-                body: JSON.stringify({
-                  query,
-                  chat_history,
-                }),
-              }
-            );
-
-            const data = await res.json();
-            const imgs = data.images;
-
-            setImages(imgs);
-
-            setSlides(
-              imgs.map((img: ImageType) => ({
-                src: img.img_src,
-              }))
-            );
-
-            setLoading(false);
-          }}
+          onClick={handleSearchImages}
           className="border border-dashed border-[#1C1C1C] hover:bg-[#1c1c1c] active:scale-95 duration-200 transition px-4 py-2 flex flex-row items-center justify-between rounded-lg text-white text-sm w-full"
         >
           <div className="flex flex-row items-center space-x-2">

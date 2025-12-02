@@ -173,7 +173,7 @@ const ChatWindow = () => {
     <div>
       {messages.length > 0 ? (
         <>
-          <Navbar />
+          <Navbar messages={messages}/>
           <Chat 
             messages={messages}
             messageAppeared={messageAppeared}

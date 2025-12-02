@@ -82,7 +82,7 @@ const MessageSources = ({ sources }: { sources: Document[] }) => {
 
       <Transition appear show={isDialogOpen} as={Fragment}>
         <Dialog as="div" className={"relative z-50"} onClose={closeModal}>
-          <div className="fixed inset-0 overflow-y-auto custom-scroll">
+          <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
               <TransitionChild
                 as={Fragment}

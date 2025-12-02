@@ -1,13 +1,26 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  turbopack:{
+  turbopack: {
     root: __dirname,
   },
-  images:{
-    domains: ["s2.googleusercontent.com"],
-  }
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "s2.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

@@ -6,6 +6,7 @@ import MessageSources from "./MessageSources";
 import ReactMarkdown from "react-markdown";
 import Rewrite from "@/messageActions/Rewrite";
 import Copy from "@/messageActions/Copy";
+import SearchImages from "./SearchImages";
 
 
 interface MessageBoxProps{
@@ -64,9 +65,6 @@ const MessageBox = ({
   }, [message.content, message.sources, message.role]);
 
 
-    
-     
-
   return (
     <div>
       {message.role === "user" && (
@@ -79,6 +77,7 @@ const MessageBox = ({
 
       {message.role === "assistant" && (
         <div className="flex flex-col space-y-9 lg:space-y-0 lg:flex-row lg:justify-between lg:space-x-9">
+
           <div
             ref={dividerRef}
             className="flex flex-col space-y-6 w-full lg:w-9/12"
@@ -142,8 +141,15 @@ const MessageBox = ({
           </div>
 
           <div className="lg:sticky lg:top-20 flex flex-col items-center space-y-3 w-full lg:w-3/12 z-30 h-full pb-4">
-               
+                <SearchImages 
+                  query={history[messageIndex - 1].content} 
+                  chat_history={history.slice(0, messageIndex -1)}
+                />
+                
+                {/**search video */}
+
           </div>
+
         </div>
       )}
     </div>

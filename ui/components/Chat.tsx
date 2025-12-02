@@ -79,7 +79,7 @@ const Chat = ({messages,sendMessage,loading,messageAppeared,rewrite}:ChatProps) 
 
         {loading && !messageAppeared && <MessageBoxLoading/>}
 
-        <div  ref={messageEnd} className="h-0" />
+        <div ref={messageEnd} className="h-0" />
         {dividerWidth > 0 && (
           <div className="bottom-24 lg:bottom-0 fixed z-40" style={{ width: dividerWidth}}>
               <MessageInput  sendMessage={sendMessage} loading={loading}/>

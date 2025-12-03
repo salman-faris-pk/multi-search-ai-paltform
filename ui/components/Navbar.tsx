@@ -18,7 +18,7 @@ const Navbar = ({ messages }: { messages: Message[] }) => {
    useEffect(() => {
      const intervalId = setInterval(() => {
        setCurrentTime(new Date());
-     }, 30000);
+     }, 5000);
 
      return () => clearInterval(intervalId);
    }, []);

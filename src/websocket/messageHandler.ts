@@ -1,14 +1,60 @@
 import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { WebSocket } from "ws";
 import handleWebSearch from "../agents/webSearchAgent.js";
+import handleYoutubeSearch from "../agents/youtubeSearchAgent.js";
+import { EventEmitter } from "stream";
+import handleWritingAssistant from "../agents/writingAssistant.js";
 
 type Message = {
   type: string;
   content: string;
   copilot: string;
-  focus: string;
+  focusMode: string;
   history: Array<[string, string]>;
 };
+
+const searchHandlers = {
+  webSearch: handleWebSearch,
+  youtubeSearch: handleYoutubeSearch,
+   writingAssistant: handleWritingAssistant,
+};
+
+const handleEmitterEvents = (
+  emitter: EventEmitter,
+  ws: WebSocket,
+  id: string
+) => {
+  emitter.on("data", (data) => {
+    const parsedData = JSON.parse(data);
+    if (parsedData.type === "response") {
+      ws.send(
+        JSON.stringify({
+          type: "message",
+          data: parsedData.data,
+          messageId: id,
+        })
+      );
+    } else if (parsedData.type === "sources") {
+      ws.send(
+        JSON.stringify({
+          type: "sources",
+          data: parsedData.data,
+          messageId: id,
+        })
+      );
+    }
+  });
+
+  emitter.on("end", () => {
+    ws.send(JSON.stringify({ type: "messageEnd", messageId: id }));
+  });
+  emitter.on("error", (data) => {
+    const parsedData = JSON.parse(data);
+    ws.send(JSON.stringify({ type: "error", data: parsedData.data }));
+  });
+};
+
+
 
 export const handleMessage = async (message: string, ws: WebSocket) => {
   try {
@@ -34,41 +80,13 @@ export const handleMessage = async (message: string, ws: WebSocket) => {
     });
 
     if (parsedMessage.type === "message") {
-      parsedMessage.focus = "webSearch";
+      const handler = searchHandlers[parsedMessage.focusMode];
+      if (handler) {
+        const emitter = handler(parsedMessage.content, history);
 
-      switch (parsedMessage.focus) {
-        case "webSearch": {
-          const emitter = handleWebSearch(parsedMessage.content, history);
-
-          emitter.on("data", (data) => {
-            const parsedData = JSON.parse(data);
-            if (parsedData.type === "response") {
-              ws.send(
-                JSON.stringify({
-                  type: "message",
-                  data: parsedData.data,
-                  messageId: id,
-                })
-              );
-            } else if (parsedData.type === "sources") {
-              ws.send(
-                JSON.stringify({
-                  type: "sources",
-                  data: parsedData.data,
-                  messageId: id,
-                })
-              );
-            }
-          });
-
-          emitter.on("end", () => {
-            ws.send(JSON.stringify({ type: "messageEnd", messageId: id }));
-          });
-          emitter.on("error", (data) => {
-            const parsedData = JSON.parse(data);
-            ws.send(JSON.stringify({ type: "error", data: parsedData.data }));
-          });
-        }
+        handleEmitterEvents(emitter, ws, id);
+      } else {
+        ws.send(JSON.stringify({ type: "error", data: "Invalid focus mode" }));
       }
     }
   } catch (error) {

@@ -4,6 +4,9 @@ import handleWebSearch from "../agents/webSearchAgent.js";
 import handleYoutubeSearch from "../agents/youtubeSearchAgent.js";
 import { EventEmitter } from "stream";
 import handleWritingAssistant from "../agents/writingAssistant.js";
+import handleRedditSearch from "../agents/redditSearchAgent.js";
+import handleAcademicSearch from "../agents/academicSearchAgent.js";
+
 
 type Message = {
   type: string;
@@ -16,7 +19,9 @@ type Message = {
 const searchHandlers = {
   webSearch: handleWebSearch,
   youtubeSearch: handleYoutubeSearch,
-   writingAssistant: handleWritingAssistant,
+  writingAssistant: handleWritingAssistant,
+  redditSearch: handleRedditSearch,
+  academicSearch: handleAcademicSearch,
 };
 
 const handleEmitterEvents = (
@@ -24,6 +29,7 @@ const handleEmitterEvents = (
   ws: WebSocket,
   id: string
 ) => {
+
   emitter.on("data", (data) => {
     const parsedData = JSON.parse(data);
     if (parsedData.type === "response") {
@@ -85,6 +91,7 @@ export const handleMessage = async (message: string, ws: WebSocket) => {
         const emitter = handler(parsedMessage.content, history);
 
         handleEmitterEvents(emitter, ws, id);
+        
       } else {
         ws.send(JSON.stringify({ type: "error", data: "Invalid focus mode" }));
       }

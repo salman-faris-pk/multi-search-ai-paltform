@@ -10,6 +10,7 @@ interface ChatMEssageInputprops {
 }
 
 const EmptyChatMessageInput = ({ sendMessage,focusMode,setFocusMode}: ChatMEssageInputprops) => {
+
   const [message, setMessage] = useState("");
   const [copilotEnabled, setCopilotEnables] = useState(false);
 
@@ -41,8 +42,9 @@ const EmptyChatMessageInput = ({ sendMessage,focusMode,setFocusMode}: ChatMEssag
         />
 
         <div className="flex flex-row items-center justify-between mt-4">
-          <div className="flex flex-row items-center space-x-1 -mx-2">
-            <Focus />
+
+          <div className="flex items-center space-x-1 -mx-2">
+            <Focus focusMode={focusMode} setFocusMode={setFocusMode}/>
             <Attach />
           </div>
 

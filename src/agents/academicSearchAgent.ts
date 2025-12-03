@@ -1,5 +1,5 @@
 import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
-import {basicRedditSearchResponsePrompt,basicRedditSearchRetrieverPrompt} from "../prompts/all-prompts.js"
+import {basicAcademicSearchRetrieverPrompt,basicAcademicSearchResponsePrompt} from "../prompts/all-prompts.js"
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate,ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 import { RunnableLambda, RunnableParallel, RunnableSequence } from "@langchain/core/runnables";
@@ -28,8 +28,6 @@ const embeddings = new GoogleGenerativeAIEmbeddings({
   model: "gemini-embedding-001",
   apiKey:process.env.GOOGLE_API_KEY
 });
-
-
 
 
 
@@ -107,8 +105,8 @@ const handleStream = async (
 };
 
 
-const basicRedditRetrievalChain= RunnableSequence.from([
-    PromptTemplate.fromTemplate(basicRedditSearchRetrieverPrompt),
+const basicAcademicRetrievalChain= RunnableSequence.from([
+    PromptTemplate.fromTemplate(basicAcademicSearchRetrieverPrompt),
     llm,
     strParser,
     RunnableLambda.from(async(input:string) => {
@@ -119,7 +117,12 @@ const basicRedditRetrievalChain= RunnableSequence.from([
 
         const res=await searchSearxng(input, {
             language: 'en',
-            engines: ["reddit"],
+            engines: [
+                "arxiv",
+                "google scholar",
+                "pubmed",
+                "crossref"
+            ],
         });
       
         const documents= res.results.map((result) =>  new Document({
@@ -138,7 +141,7 @@ const basicRedditRetrievalChain= RunnableSequence.from([
 
 
 
-const basicReddutAnsweringChain= RunnableSequence.from([
+const basicAcademicAnsweringChain= RunnableSequence.from([
     RunnableParallel.from({
         query: (input: BasicChainInput) => input.query,
         chat_history: (input: BasicChainInput) => input.chat_history,
@@ -147,7 +150,7 @@ const basicReddutAnsweringChain= RunnableSequence.from([
                 query: input.query,
                 chat_history: formatChatHistoryAsString(input.chat_history)
             }),
-            basicRedditRetrievalChain
+            basicAcademicRetrievalChain
                .pipe(rerankDocs)
                .withConfig({
                 runName: "FinalSourceRetriever"
@@ -156,7 +159,7 @@ const basicReddutAnsweringChain= RunnableSequence.from([
         ]),
     }),
     ChatPromptTemplate.fromMessages([
-      ["system", basicRedditSearchResponsePrompt],
+      ["system", basicAcademicSearchResponsePrompt],
       new MessagesPlaceholder("chat_history"),
       ['user', "{query}"]      
     ]),
@@ -167,12 +170,12 @@ const basicReddutAnsweringChain= RunnableSequence.from([
 });
 
 
-const basicRedditSearch =(query:string, history: BaseMessage[])=>{
+const basicAcademicSearch =(query:string, history: BaseMessage[])=>{
 
      const emitter= new EventEmitter();
 
      try{
-        const stream= basicReddutAnsweringChain.streamEvents(
+        const stream= basicAcademicAnsweringChain.streamEvents(
         {
           chat_history: history,
           query: query
@@ -197,11 +200,11 @@ const basicRedditSearch =(query:string, history: BaseMessage[])=>{
 
 
 
-const handleRedditSearch=(message: string, history: BaseMessage[])=>{
-   const emitter=basicRedditSearch(message, history);
+const handleAcademicSearch=(message: string, history: BaseMessage[])=>{
+   const emitter=basicAcademicSearch(message, history);
 
    return emitter;
 };
 
 
-export default handleRedditSearch;
+export default handleAcademicSearch;

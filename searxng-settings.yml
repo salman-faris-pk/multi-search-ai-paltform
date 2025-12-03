@@ -484,7 +484,7 @@ engines:
     engine: crossref
     shortcut: cr
     timeout: 30
-    disabled: true
+    disabled: false
 
   - name: crowdview
     engine: json_engine
@@ -1435,13 +1435,13 @@ engines:
       require_api_key: false
       results: HTML
 
-  - name: qwant
-    qwant_categ: web
-    engine: qwant
-    shortcut: qw
-    categories: [general, web]
-    additional_tests:
-      rosebud: *test_rosebud
+  # - name: qwant
+  #   qwant_categ: web
+  #   engine: qwant
+  #   shortcut: qw
+  #   categories: [general, web]
+  #   additional_tests:
+  #     rosebud: *test_rosebud
 
   - name: qwant news
     qwant_categ: news

@@ -12,6 +12,7 @@
     "dev": "tsx watch src/app.ts"
   },
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "@langchain/core": "^1.0.6",
     "@langchain/google-genai": "^1.0.3",
     "axios": "^1.13.2",

@@ -5,7 +5,7 @@ import { PromptTemplate,ChatPromptTemplate, MessagesPlaceholder } from "@langcha
 import { RunnableLambda, RunnableParallel, RunnableSequence } from "@langchain/core/runnables";
 import { searchSearxng } from "../lib/searxng.js";
 import { Document } from "@langchain/core/documents"
-import { BaseMessage } from "langchain";
+import { BaseMessage } from "@langchain/core/messages";
 import formatChatHistoryAsString from "../utils/formatHistory.js";
 import computeSimilarity from "../utils/computeSimilarity.js";
 import { EventEmitter} from "events";
@@ -14,22 +14,19 @@ import { StreamEvent } from "@langchain/core/tracers/log_stream";
 
 
 const llm = new ChatGoogleGenerativeAI({
-  model: "gemini-2.0-flash",
+  model: process.env.MODEL_NAME,
   temperature: 0,
 });
 
 const Chatllm = new ChatGoogleGenerativeAI({
-  model: "gemini-2.0-flash-lite",
+  model: process.env.CHAT_MODEL_NAME,
   temperature: 0.7,
 });
 
 
 const embeddings = new GoogleGenerativeAIEmbeddings({
-  model: "gemini-embedding-001",
-  apiKey:process.env.GOOGLE_API_KEY
+  model: process.env.EMBEDDINGS_MODEL,
 });
-
-
 
 
 

@@ -6,6 +6,9 @@ import { EventEmitter } from "stream";
 import handleWritingAssistant from "../agents/writingAssistant.js";
 import handleRedditSearch from "../agents/redditSearchAgent.js";
 import handleAcademicSearch from "../agents/academicSearchAgent.js";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import type { Embeddings } from "@langchain/core/embeddings";
+
 
 
 type Message = {
@@ -62,7 +65,12 @@ const handleEmitterEvents = (
 
 
 
-export const handleMessage = async (message: string, ws: WebSocket) => {
+export const handleMessage = async (
+  message: string,
+  ws: WebSocket,
+  llm:BaseChatModel,
+  embeddings:Embeddings,
+) => {
   try {
     const parsedMessage = JSON.parse(message) as Message;
     const id = crypto.randomUUID().replace(/-/g, "").substring(0, 10);
@@ -86,9 +94,9 @@ export const handleMessage = async (message: string, ws: WebSocket) => {
     });
 
     if (parsedMessage.type === "message") {
-      const handler = searchHandlers[parsedMessage.focusMode];
+      const handler = searchHandlers[parsedMessage.focusMode];  //Selecting the correct handler using focsmode and choosing the serach functions
       if (handler) {
-        const emitter = handler(parsedMessage.content, history);
+        const emitter = handler(parsedMessage.content, history,llm,embeddings);   //passing data to chooses searchhandler
 
         handleEmitterEvents(emitter, ws, id);
         

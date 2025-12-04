@@ -1,9 +1,10 @@
 import dot from "compute-dot";
 import cosineSimilarity from "compute-cosine-similarity"
+import { getSimilarityMeasure } from "../config.js";
 
 const computeSimilarity = (x: number[], y: number[]): number => {
-  const similarityMeasure = process.env.SIMILARITY_MEASURE;
 
+  const similarityMeasure = getSimilarityMeasure();
   if (similarityMeasure === "cosine") {
     return cosineSimilarity(x, y);
   }

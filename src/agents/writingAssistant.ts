@@ -11,11 +11,11 @@ import { EventEmitter} from "events";
 
 
 
-
 const llm = new ChatGoogleGenerativeAI({
-  model: "gemini-2.0-flash",
+  model: process.env.MODEL_NAME,
   temperature: 0,
 });
+
 
 
 const writingAssistantPrompt = `

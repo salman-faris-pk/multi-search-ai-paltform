@@ -9,8 +9,9 @@ import { searchSearxng } from "../lib/searxng.js";
 import { imageSearchChainPrompt } from '../prompts/all-prompts.js';
 
 
+
 const llm = new ChatGoogleGenerativeAI({
-  model: "gemini-2.0-flash",
+  model: process.env.CHAT_MODEL_NAME,
   temperature: 0,
 });
 

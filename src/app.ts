@@ -5,10 +5,14 @@ import http from 'http'
 import cors from "cors"
 import routes from "./routes/index.js"
 import { startWebSocketServer } from "./websocket/index.js";
+import { getPort } from "./config.js"
 
+
+const PORT= getPort()
 
 const app = express();
 const server=http.createServer(app);
+
 
 app.use(express.json());
 
@@ -24,6 +28,6 @@ app.get("/api", (_, res) => {
 });
 
 
-server.listen(process.env.PORT, () => console.log("Server running on port",process.env.PORT));
+server.listen(PORT, () => console.log("Server running on port",PORT));
  
 startWebSocketServer(server);

@@ -124,7 +124,8 @@ const basicYoutubeSearch =(query:string, history: BaseMessage[],llm:BaseChatMode
      const emitter= new EventEmitter();
 
      try{
-      const basicYoutubeSearchAnsweringChain=createBasicYoutubeSearchAnsweringChain(llm,embeddings)
+      const basicYoutubeSearchAnsweringChain=createBasicYoutubeSearchAnsweringChain(llm,embeddings);
+
         const stream= basicYoutubeSearchAnsweringChain.streamEvents(
         {
           chat_history: history,

@@ -1,4 +1,3 @@
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { BaseMessage } from "@langchain/core/messages";
 import { RunnableSequence } from "@langchain/core/runnables";
 import {
@@ -8,13 +7,7 @@ import {
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import type { StreamEvent } from "@langchain/core/tracers/log_stream";
 import { EventEmitter} from "events";
-
-
-
-const llm = new ChatGoogleGenerativeAI({
-  model: process.env.MODEL_NAME,
-  temperature: 0,
-});
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 
 
@@ -39,22 +32,22 @@ const handleStream = async (
         }));
         break;
       
-      case "on_chain_stream:FinalResponseGenerator":
+      case "on_chain_stream:WritingAssitantResponseGenerator":
         emitter.emit("data", JSON.stringify({
           type: "response",
           data: event.data.chunk
         }));
         break;
       
-      case "on_chain_end:FinalResponseGenerator":
+      case "on_chain_end:WritingAssitantResponseGenerator":
         emitter.emit("end");
         break;
     }
   }
 };
 
-
-const basicWritingAssistanChain= RunnableSequence.from([
+const createWritingAssistantChain = (llm: BaseChatModel) => {
+    return RunnableSequence.from([
     ChatPromptTemplate.fromMessages([
         ["system", writingAssistantPrompt],   //you are a writing assistant
         new MessagesPlaceholder("chat_history"),  //insert all previous messages from the conversation
@@ -63,17 +56,22 @@ const basicWritingAssistanChain= RunnableSequence.from([
     llm,
     strParser,
 ]).withConfig({
-    runName: "FinalResponseGenerator",
+    runName: "WritingAssitantResponseGenerator",
 });
+};
 
 
-
-const handleWritingAssistant =(query:string, history: BaseMessage[])=>{
+const handleWritingAssistant =(
+  query:string, 
+  history: BaseMessage[],
+  llm: BaseChatModel,
+) => {
 
      const emitter= new EventEmitter();
 
      try{
-        const stream= basicWritingAssistanChain.streamEvents(
+        const writingAssistantChain = createWritingAssistantChain(llm);
+        const stream= writingAssistantChain.streamEvents(
         {
           chat_history: history,
           query: query
@@ -82,7 +80,7 @@ const handleWritingAssistant =(query:string, history: BaseMessage[])=>{
         });
 
 
-        handleStream(stream, emitter)
+        handleStream(stream, emitter);
 
      }catch(err){
        emitter.emit(

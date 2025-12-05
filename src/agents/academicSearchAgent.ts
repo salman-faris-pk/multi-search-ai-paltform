@@ -1,4 +1,3 @@
-import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import {basicAcademicSearchRetrieverPrompt,basicAcademicSearchResponsePrompt} from "../prompts/all-prompts.js"
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate,ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
@@ -7,67 +6,12 @@ import { searchSearxng } from "../lib/searxng.js";
 import { Document } from "@langchain/core/documents"
 import { BaseMessage } from "@langchain/core/messages"
 import formatChatHistoryAsString from "../utils/formatHistory.js";
-import computeSimilarity from "../utils/computeSimilarity.js";
 import { EventEmitter} from "events";
 import { StreamEvent } from "@langchain/core/tracers/log_stream";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import type { Embeddings } from "@langchain/core/embeddings";
+import { processDocs, createRerankDocs } from '../utils/document-processors.js';
 
-
-const llm = new ChatGoogleGenerativeAI({
-  model: process.env.MODEL_NAME,
-  temperature: 0,
-});
-
-const Chatllm = new ChatGoogleGenerativeAI({
-  model: process.env.CHAT_MODEL_NAME,
-  temperature: 0.7,
-});
-
-
-const embeddings = new GoogleGenerativeAIEmbeddings({
-  model: process.env.EMBEDDINGS_MODEL,
-});
-
-
-
-const processDocs = async (docs: Document[]) => {
-  return docs
-    .map((_, index) => `${index + 1}. ${docs[index].pageContent}`)
-    .join("\n");
-};
-
-const rerankDocs= async({query,docs}:{query:string,docs: Document[]})=>{
-
-        if(docs.length === 0){
-          return docs
-        };
-
-        const docsWithContent= docs.filter((doc)=> doc.pageContent && doc.pageContent.length > 0) 
-
-        const [docEmbeddings,queryEmbedding]=await Promise.all([
-            embeddings.embedDocuments(docsWithContent.map((doc)=> doc.pageContent)),
-            embeddings.embedQuery(query)
-        ]);
-
-        const similarity= docEmbeddings.map((docEmbdeding,i) => {
-            const sim= computeSimilarity(queryEmbedding, docEmbdeding); 
-
-             return {
-                index: i,
-                similarity: sim
-             }
-        });
-
-        const sortedDocs=similarity
-          .sort((a,b) => b.similarity - a.similarity) 
-          .filter((sim) => sim.similarity > 0.5)   
-          .slice(0, 15)
-          .map((sim) => docsWithContent[sim.index]) 
-
-
-          return sortedDocs;
-};
 
 
 type BasicChainInput = {
@@ -83,21 +27,21 @@ const handleStream = async (
 ) => {
   for await (const event of stream) {
     switch (`${event.event}:${event.name}`) {
-      case "on_chain_end:FinalSourceRetriever":
+      case "on_chain_end:AcademicSourceRetrieval":
         emitter.emit("data", JSON.stringify({
           type: "sources",
           data: event.data.output
         }));
         break;
       
-      case "on_chain_stream:FinalResponseGenerator":
+      case "on_chain_stream:AcademicResponseGenerator":
         emitter.emit("data", JSON.stringify({
           type: "response",
           data: event.data.chunk
         }));
         break;
       
-      case "on_chain_end:FinalResponseGenerator":
+      case "on_chain_end:AcademicResponseGenerator":
         emitter.emit("end");
         break;
     }
@@ -105,7 +49,8 @@ const handleStream = async (
 };
 
 
-const basicAcademicRetrievalChain= RunnableSequence.from([
+const createBasicAcademicSearchRetrieverChain= (llm: BaseChatModel) => {
+  return RunnableSequence.from([
     PromptTemplate.fromTemplate(basicAcademicSearchRetrieverPrompt),
     llm,
     strParser,
@@ -134,28 +79,36 @@ const basicAcademicRetrievalChain= RunnableSequence.from([
             },
         }));
 
-        return { query:input, docs: documents}
+        return { query: input, docs: documents}
 
     }),
 ]);
+};
 
 
 
-const basicAcademicAnsweringChain= RunnableSequence.from([
+const createBasicAcademicSearchAnsweringChain= (llm: BaseChatModel, embeddings: Embeddings) => {
+
+  const basicAcademicSearchRetrieverChain =
+    createBasicAcademicSearchRetrieverChain(llm);
+
+    const rerankDocs = createRerankDocs(embeddings);
+
+  return RunnableSequence.from([
     RunnableParallel.from({
-        query: (input: BasicChainInput) => input.query,
+        query: (input: BasicChainInput) => input. query,
         chat_history: (input: BasicChainInput) => input.chat_history,
         context: RunnableSequence.from([
             (input)=> ({
                 query: input.query,
                 chat_history: formatChatHistoryAsString(input.chat_history)
             }),
-            basicAcademicRetrievalChain
+                basicAcademicSearchRetrieverChain
                .pipe(rerankDocs)
-               .withConfig({
-                runName: "FinalSourceRetriever"
-               })
                .pipe(processDocs)
+               .withConfig({
+                runName: "AcademicSourceRetrieval"
+               })
         ]),
     }),
     ChatPromptTemplate.fromMessages([
@@ -163,19 +116,26 @@ const basicAcademicAnsweringChain= RunnableSequence.from([
       new MessagesPlaceholder("chat_history"),
       ['user', "{query}"]      
     ]),
-    Chatllm,
+    llm,
     strParser,
 ]).withConfig({
-   runName: "FinalResponseGenerator"
+   runName: "AcademicResponseGenerator"
 });
+};
 
 
-const basicAcademicSearch =(query:string, history: BaseMessage[])=>{
-
+const basicAcademicSearch =(
+  query:string, 
+  history: BaseMessage[],
+  llm:BaseChatModel, 
+  embeddings: Embeddings
+  ) => {
      const emitter= new EventEmitter();
 
      try{
-        const stream= basicAcademicAnsweringChain.streamEvents(
+       const basicAcademicSearchAnsweringChain =
+              createBasicAcademicSearchAnsweringChain(llm, embeddings);
+        const stream= basicAcademicSearchAnsweringChain.streamEvents(
         {
           chat_history: history,
           query: query
@@ -200,8 +160,14 @@ const basicAcademicSearch =(query:string, history: BaseMessage[])=>{
 
 
 
-const handleAcademicSearch=(message: string, history: BaseMessage[])=>{
-   const emitter=basicAcademicSearch(message, history);
+const handleAcademicSearch=(
+   message: string,
+   history: BaseMessage[],
+   llm:BaseChatModel, 
+   embeddings: Embeddings
+   )=>{
+
+   const emitter=basicAcademicSearch(message, history,llm,embeddings);
 
    return emitter;
 };

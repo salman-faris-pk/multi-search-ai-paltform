@@ -1,4 +1,3 @@
-import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import {basicYoutubeSearchResponsePrompt,basicYoutubeSearchRetrieverPrompt} from "../prompts/all-prompts.js"
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate,ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
@@ -7,67 +6,12 @@ import { searchSearxng } from "../lib/searxng.js";
 import { Document } from "@langchain/core/documents"
 import { BaseMessage } from "@langchain/core/messages";
 import formatChatHistoryAsString from "../utils/formatHistory.js";
-import computeSimilarity from "../utils/computeSimilarity.js";
 import { EventEmitter} from "events";
 import { StreamEvent } from "@langchain/core/tracers/log_stream";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import type { Embeddings } from "@langchain/core/embeddings";
+import { processDocs, createRerankDocs } from '../utils/document-processors.js';
 
-
-
-
-const llm = new ChatGoogleGenerativeAI({
-  model: process.env.MODEL_NAME,
-  temperature: 0,
-});
-
-const Chatllm = new ChatGoogleGenerativeAI({
-  model: process.env.CHAT_MODEL_NAME,
-  temperature: 0.7,
-});
-
-
-const embeddings = new GoogleGenerativeAIEmbeddings({
-  model: process.env.EMBEDDINGS_MODEL,
-});
-
-
-
-const processDocs = async (docs: Document[]) => {
-  return docs
-    .map((_, index) => `${index + 1}. ${docs[index].pageContent}`)
-    .join("\n");
-};
-
-const rerankDocs= async({query,docs}:{query:string,docs: Document[]})=>{
-
-        if(docs.length === 0){
-          return docs
-        };
-
-        const docsWithContent= docs.filter((doc)=> doc.pageContent && doc.pageContent.length > 0) 
-
-        const [docEmbeddings,queryEmbedding]=await Promise.all([
-            embeddings.embedDocuments(docsWithContent.map((doc)=> doc.pageContent)),
-            embeddings.embedQuery(query)
-        ]);
-
-        const similarity= docEmbeddings.map((docEmbdeding,i) => {
-            const sim= computeSimilarity(queryEmbedding, docEmbdeding); 
-
-             return {
-                index: i,
-                similarity: sim
-             }
-        });
-
-        const sortedDocs=similarity
-          .sort((a,b) => b.similarity - a.similarity) 
-          .filter((sim) => sim.similarity > 0.5)   
-          .slice(0, 15)
-          .map((sim) => docsWithContent[sim.index]) 
-
-
-          return sortedDocs;
-};
 
 
 type BasicChainInput = {
@@ -83,60 +27,68 @@ const handleStream = async (
 ) => {
   for await (const event of stream) {
     switch (`${event.event}:${event.name}`) {
-      case "on_chain_end:FinalSourceRetriever":
+      case "on_chain_end:YoutubeSearchSourceRetriever":
         emitter.emit("data", JSON.stringify({
           type: "sources",
           data: event.data.output
         }));
         break;
       
-      case "on_chain_stream:FinalResponseGenerator":
+      case "on_chain_stream:YoutubeSearchResponseGenerator":
         emitter.emit("data", JSON.stringify({
           type: "response",
           data: event.data.chunk
         }));
         break;
       
-      case "on_chain_end:FinalResponseGenerator":
+      case "on_chain_end:YoutubeSearchResponseGenerator":
         emitter.emit("end");
         break;
     }
   }
 };
 
+const createBasicYoutubeSearchRetrieverChain =(llm:BaseChatModel)=>{
+   return RunnableSequence.from([
+     PromptTemplate.fromTemplate(basicYoutubeSearchRetrieverPrompt),
+     llm,
+     strParser,
+     RunnableLambda.from(async (input: string) => {
+       if (input === "not_needed") {
+         return { query: "", docs: [] };
+       }
 
-const basicYoutubeSearchRetrievalChain= RunnableSequence.from([
-    PromptTemplate.fromTemplate(basicYoutubeSearchRetrieverPrompt),
-    llm,
-    strParser,
-    RunnableLambda.from(async(input:string) => {
+       const res = await searchSearxng(input, {
+         language: "en",
+         engines: ["youtube"],
+       });
 
-        if(input === 'not_needed'){
-            return{query:"",docs: []}
-        };
+       const documents = res.results.map(
+         (result) =>
+           new Document({
+             pageContent: result.content,
+             metadata: {
+               title: result.title,
+               url: result.url,
+               ...(result.img_src && { img_src: result.img_src }),
+             },
+           })
+       );
 
-        const res=await searchSearxng(input, {
-            language: 'en',
-            engines: ["youtube"]
-        });
-      
-        const documents= res.results.map((result) =>  new Document({
-            pageContent: result.content,
-            metadata: {
-                title: result.title,
-                url: result.url,
-                ...(result.img_src && { img_src: result.img_src }),
-            },
-        }));
-
-        return { query:input, docs: documents}
-
-    }),
-]);
+       return { query: input, docs: documents };
+     }),
+   ]);
+};
 
 
+const createBasicYoutubeSearchAnsweringChain =(llm: BaseChatModel,embeddings: Embeddings) => {
+    
+  const basicYoutubeSearchRetrieverChain =
+    createBasicYoutubeSearchRetrieverChain(llm);
 
-const basicYoutubeSearchAnsweringChain= RunnableSequence.from([
+  const rerankDocs=createRerankDocs(embeddings);
+
+  return RunnableSequence.from([
     RunnableParallel.from({
         query: (input: BasicChainInput) => input.query,
         chat_history: (input: BasicChainInput) => input.chat_history,
@@ -145,12 +97,12 @@ const basicYoutubeSearchAnsweringChain= RunnableSequence.from([
                 query: input.query,
                 chat_history: formatChatHistoryAsString(input.chat_history)
             }),
-            basicYoutubeSearchRetrievalChain
+             basicYoutubeSearchRetrieverChain
                .pipe(rerankDocs)
-               .withConfig({
-                runName: "FinalSourceRetriever"
-               })
                .pipe(processDocs)
+               .withConfig({
+                runName: "YoutubeSearchSourceRetriever"
+               })
         ]),
     }),
     ChatPromptTemplate.fromMessages([
@@ -158,18 +110,21 @@ const basicYoutubeSearchAnsweringChain= RunnableSequence.from([
       new MessagesPlaceholder("chat_history"),
       ['user', "{query}"]      
     ]),
-    Chatllm,
+    llm,
     strParser,
 ]).withConfig({
-   runName: "FinalResponseGenerator"
+   runName: "YoutubeSearchResponseGenerator"
 });
+};
 
 
-const basicYoutubeSearch =(query:string, history: BaseMessage[])=>{
+
+const basicYoutubeSearch =(query:string, history: BaseMessage[],llm:BaseChatModel,embeddings:Embeddings)=>{
 
      const emitter= new EventEmitter();
 
      try{
+      const basicYoutubeSearchAnsweringChain=createBasicYoutubeSearchAnsweringChain(llm,embeddings)
         const stream= basicYoutubeSearchAnsweringChain.streamEvents(
         {
           chat_history: history,
@@ -195,8 +150,14 @@ const basicYoutubeSearch =(query:string, history: BaseMessage[])=>{
 
 
 
-const handleYoutubeSearch=(message: string, history: BaseMessage[])=>{
-   const emitter=basicYoutubeSearch(message, history);
+const handleYoutubeSearch=(
+   message: string,
+   history: BaseMessage[],
+   llm:BaseChatModel,
+  embeddings:Embeddings
+  )=>{
+    
+   const emitter=basicYoutubeSearch(message, history, llm, embeddings);
 
    return emitter;
 };

@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { BaseMessage } from "@langchain/core/messages"
 import { RunnableSequence,RunnableLambda, RunnableParallel} from "@langchain/core/runnables"
 import { PromptTemplate } from "@langchain/core/prompts"
@@ -7,13 +6,7 @@ import formatChatHistoryAsString from "../utils/formatHistory.js";
 import { StringOutputParser } from "@langchain/core/output_parsers"
 import { searchSearxng } from "../lib/searxng.js";
 import { imageSearchChainPrompt } from '../prompts/all-prompts.js';
-
-
-
-const llm = new ChatGoogleGenerativeAI({
-  model: process.env.CHAT_MODEL_NAME,
-  temperature: 0,
-});
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 
 
@@ -24,11 +17,10 @@ type ImageSearchChainInput ={
 
 const strParser=new StringOutputParser();
 
-
-const extractImagesFromResults = async (query: string) => {
+ const extractImagesFromResults = async (query: string) => {
   const res = await searchSearxng(query, {
     categories: ["images"],
-    engines: ["google images", "bing images", "yandex images"],
+    engines: ["google images", "bing images"],
   });
  
   return res.results
@@ -37,8 +29,8 @@ const extractImagesFromResults = async (query: string) => {
     .map(({ img_src, url, title }) => ({ img_src, url, title }));
 };
 
-
-const imageSearchChain = RunnableSequence.from([ 
+const createImageSearchChain =(llm:BaseChatModel)=> {
+  return RunnableSequence.from([ 
     RunnableParallel.from({                         
         chat_history: (input:ImageSearchChainInput) => { 
             return formatChatHistoryAsString(input.chat_history);
@@ -52,8 +44,16 @@ const imageSearchChain = RunnableSequence.from([
     strParser,                                              
     RunnableLambda.from(extractImagesFromResults),
 ]);
+};
+
+
+export const handleImageSearch = (
+  input: ImageSearchChainInput,
+  llm: BaseChatModel
+) => createImageSearchChain(llm).invoke(input);
 
 
 
-export default imageSearchChain;
+
+export default handleImageSearch;
 

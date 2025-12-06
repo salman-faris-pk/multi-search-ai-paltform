@@ -12,12 +12,15 @@ interface Config{
     GENERAL: {
         PORT: number;
         SIMILARITY_MEASURE: string;
+        CHAT_MODEL_PROVIDER: string;
+        CHAT_MODEL: string;
     };
     API_KEYS: {
       GOOGLE_API_KEY: string;
     },
     API_ENDPOINTS: {
       SEARXNG: string;
+      OLLAMA: string;
     }
 };
 
@@ -35,3 +38,10 @@ export const getSimilarityMeasure = () => loadConfig().GENERAL.SIMILARITY_MEASUR
 export const getGeminaiApiKey = () => loadConfig().API_KEYS.GOOGLE_API_KEY;
 
 export const getSearxngApiEndpoint = () => loadConfig().API_ENDPOINTS.SEARXNG;
+
+export const getChatModelProvider = () => loadConfig().GENERAL.CHAT_MODEL_PROVIDER;
+
+export const getOllamaApiEndpoint = ()=> loadConfig().API_ENDPOINTS.OLLAMA;
+
+export const getChatModel = () => loadConfig().GENERAL.CHAT_MODEL;
+

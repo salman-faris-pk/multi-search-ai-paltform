@@ -5,7 +5,6 @@ import { OllamaEmbeddings,ChatOllama } from "@langchain/ollama";
 
 export const getAvailableProviders = async() => {
 
-
     const geminaiApikey= getGeminaiApiKey();
     const ollamaEndpoint= getOllamaApiEndpoint();
 

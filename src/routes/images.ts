@@ -1,27 +1,43 @@
 import express from "express";
 import handleImageSearch from "../agents/imageSearchAgent.js";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { getGeminaiApiKey } from "../config.js";
+import { getChatModel, getChatModelProvider, getGeminaiApiKey } from "../config.js";
+import { AIMessage, HumanMessage } from "@langchain/core/messages";
+import { getAvailableProviders } from "../lib/providers.js";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 const router = express.Router();
-
- const llm = new ChatGoogleGenerativeAI({
-  model: process.env.MODEL_NAME,
-  temperature: 0,
-  apiKey: getGeminaiApiKey(),
-});
 
 
 router.post("/", async(req, res) => {
     try {
             
-        const {query,chat_history}=req.body;
-          
-        const images=await handleImageSearch({
-            query,
-            chat_history: chat_history || [],
-        },llm);
+        let {query,chat_history}=req.body;
 
+        chat_history = chat_history.map((msg:any) => {
+           if(msg.role === "user"){
+            return new HumanMessage(msg.content)
+           }else if(msg.role === "assistant"){
+            return new AIMessage(msg.content)
+           }
+        });
+
+        const models=await getAvailableProviders();
+        const provider=getChatModelProvider();
+        const chatModel= getChatModel();
+
+        let llm:BaseChatModel | undefined;
+
+        if(models[provider] && models[provider][chatModel]) {
+             llm= models[provider][chatModel]  as BaseChatModel | undefined;
+        };
+
+         if (!llm) {
+           res.status(500).json({ message: "Invalid LLM model selected" });
+            return;
+         };
+
+        const images=await handleImageSearch({query,chat_history: chat_history},llm);
         
         res.status(200).json({ images });
 

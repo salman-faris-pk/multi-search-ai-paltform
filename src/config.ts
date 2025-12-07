@@ -17,7 +17,6 @@ const configFile= "config.toml"
     },
     API_KEYS: {
       GEMINI: string;
-      OPENAI: string;
       GROQ: string;
     },
     API_ENDPOINTS: {
@@ -38,6 +37,8 @@ export const getPort =()=> loadConfig().GENERAL.PORT;
 export const getSimilarityMeasure = () => loadConfig().GENERAL.SIMILARITY_MEASURE;
 
 export const getGeminaiApiKey = () => loadConfig().API_KEYS.GEMINI;
+
+export const getGroqApiKey = () => loadConfig().API_KEYS.GROQ;
 
 export const getSearxngApiEndpoint = () => loadConfig().API_ENDPOINTS.SEARXNG;
 

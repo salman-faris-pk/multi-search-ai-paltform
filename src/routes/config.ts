@@ -21,9 +21,11 @@ router.get("/",async(_,res)=>{
          config["providers"][provider] = Object.keys(data)    //here provider means key like gemini,openai...                                                        
       };                                                       //data means gpt or gemini verisons or model names
 
+     const geminiKey = getGeminaiApiKey();
      config["selectedProvider"]=getChatModelProvider();
      config["selectedChatModel"]=getChatModel();
-     config["geminiApiKey"] = getGeminaiApiKey()? true : false;;
+     config["geminiApiKey"] = geminiKey ? `${geminiKey.slice(0, 5)}************${geminiKey.slice(-4)}`
+      : null;
      config["ollamaApiUrl"] = getOllamaApiEndpoint();
 
       res.status(200).json(config);

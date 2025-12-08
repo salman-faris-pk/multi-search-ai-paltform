@@ -1443,26 +1443,26 @@ engines:
   #   additional_tests:
   #     rosebud: *test_rosebud
 
-  - name: qwant news
-    qwant_categ: news
-    engine: qwant
-    shortcut: qwn
-    categories: news
-    network: qwant
+  # - name: qwant news
+  #   qwant_categ: news
+  #   engine: qwant
+  #   shortcut: qwn
+  #   categories: news
+  #   network: qwant
 
-  - name: qwant images
-    qwant_categ: images
-    engine: qwant
-    shortcut: qwi
-    categories: [images, web]
-    network: qwant
+  # - name: qwant images
+  #   qwant_categ: images
+  #   engine: qwant
+  #   shortcut: qwi
+  #   categories: [images, web]
+  #   network: qwant
 
-  - name: qwant videos
-    qwant_categ: videos
-    engine: qwant
-    shortcut: qwv
-    categories: [videos, web]
-    network: qwant
+  # - name: qwant videos
+  #   qwant_categ: videos
+  #   engine: qwant
+  #   shortcut: qwv
+  #   categories: [videos, web]
+  #   network: qwant
 
   # - name: library
   #   engine: recoll

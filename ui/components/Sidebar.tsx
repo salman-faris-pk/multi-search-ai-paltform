@@ -67,10 +67,6 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             className="text-white cursor-pointer"
           />
-          <SettingsDialog
-            isOpen={isSettingsOpen}
-            setIsOpen={setIsSettingsOpen}
-          />
         </div>
       </aside>
       
@@ -92,7 +88,20 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             <p className="text-xs">{link.label}</p>
           </Link>
         ))}
+         <button
+          onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+          className="relative flex flex-col items-center space-y-1 text-center w-full text-white/70 hover:text-white"
+        >
+          <Settings />
+          <p className="text-xs">Settings</p>
+        </button>
       </nav>
+
+
+       <SettingsDialog
+        isOpen={isSettingsOpen}
+        setIsOpen={setIsSettingsOpen}
+      />
       
       <Layout>{children}</Layout>
     </>

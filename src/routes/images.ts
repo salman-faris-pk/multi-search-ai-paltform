@@ -1,6 +1,5 @@
 import express from "express";
 import handleImageSearch from "../agents/imageSearchAgent.js";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { getChatModel, getChatModelProvider, getGeminaiApiKey } from "../config.js";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { getAvailableProviders } from "../lib/providers.js";

@@ -20,11 +20,19 @@ const SearchImages = ({
   query: string;
   chat_history: Message[];
 }) => {
+  
   const [images, setImages] = useState<ImageType[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [slides, setSlides] = useState<SlideImage[]>([]);
 
+
+  const normalizeImageUrl = (url: string): string => {
+  if (url.startsWith('//')) {
+    return `https:${url}`;
+  }
+  return url;
+};
  
 
    const handleSearchImages = async () => {
@@ -54,10 +62,14 @@ const SearchImages = ({
         throw new Error('Invalid response format');
       };
 
-      const imagesArray = data.images;
-      setImages(imagesArray);
+       const normalizedImages = data.images.map((image: ImageType) => ({
+        ...image,
+        img_src: normalizeImageUrl(image.img_src)
+      }));
       
-      const newSlides = imagesArray.map((image: ImageType) => ({
+      setImages(normalizedImages);
+      
+      const newSlides = normalizedImages.map((image: ImageType) => ({
         src: image.img_src,
       }));
       setSlides(newSlides);

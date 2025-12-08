@@ -20,7 +20,7 @@ const configFile= "config.toml"
       GROQ: string;
     },
     API_ENDPOINTS: {
-      SEARXNG: string;
+      SEARXNG_API_URL: string;
       OLLAMA: string;
     }
 };
@@ -40,7 +40,7 @@ export const getGeminaiApiKey = () => loadConfig().API_KEYS.GEMINI;
 
 export const getGroqApiKey = () => loadConfig().API_KEYS.GROQ;
 
-export const getSearxngApiEndpoint = () => loadConfig().API_ENDPOINTS.SEARXNG;
+export const getSearxngApiEndpoint = () => loadConfig().API_ENDPOINTS.SEARXNG_API_URL;
 
 export const getChatModelProvider = () => loadConfig().GENERAL.CHAT_MODEL_PROVIDER;
 

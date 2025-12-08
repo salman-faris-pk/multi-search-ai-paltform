@@ -10,9 +10,7 @@ import { StreamEvent } from "@langchain/core/tracers/log_stream";
 import { basicSearchRetrieverPrompt, basicWebSearchResponsePrompt } from "../prompts/all-prompts.js";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import type { Embeddings } from "@langchain/core/embeddings";
-import { processDocs, createRerankDocs } from '../utils/document-processors.js';
-
-
+import computeSimilarity from "../utils/computeSimilarity.js";
 
 
 type BasicChainInput = {
@@ -28,21 +26,21 @@ const handleStream = async (
 ) => {
   for await (const event of stream) {
     switch (`${event.event}:${event.name}`) {
-      case "on_chain_end:WebSearchSourceRetriever":
+      case "on_chain_end:FinalSourceRetriever":
         emitter.emit("data", JSON.stringify({
           type: "sources",
           data: event.data.output
         }));
         break;
       
-      case "on_chain_stream:WebSearchResponseGenerator":
+      case "on_chain_stream:FinalResponseGenerator":
         emitter.emit("data", JSON.stringify({
           type: "response",
           data: event.data.chunk
         }));
         break;
       
-      case "on_chain_end:WebSearchResponseGenerator":
+      case "on_chain_end:FinalResponseGenerator":
         emitter.emit("end");
         break;
     }
@@ -84,7 +82,43 @@ const createBasicWebSearchAnsweringChain =(llm:BaseChatModel,embeddings:Embeddin
 
   const basicWebSearchRetrieverChain = createBasicWebSearchRetrieverChain(llm);
 
-  const rerankDocs=createRerankDocs(embeddings);
+  const processDocs = async (docs: Document[]) => {
+  return docs
+    .map((_, index) => `${index + 1}. ${docs[index].pageContent}`)
+    .join("\n");
+};
+
+const rerankDocs= async({query,docs}:{query:string;docs: Document[]}) => {
+
+        if(docs.length === 0){
+          return docs
+        };
+
+        const docsWithContent= docs.filter((doc)=> doc.pageContent && doc.pageContent.length > 0)
+
+        const [docEmbeddings,queryEmbedding]=await Promise.all([
+            embeddings.embedDocuments(docsWithContent.map((doc)=> doc.pageContent)),
+            embeddings.embedQuery(query)
+        ]);
+
+        const similarity= docEmbeddings.map((docEmbdeding,i) => {
+             const sim= computeSimilarity(queryEmbedding, docEmbdeding);
+
+             return {
+                index: i,
+                similarity: sim
+             }
+        });
+
+        const sortedDocs=similarity
+          .sort((a,b) => b.similarity - a.similarity)
+          .filter((sim) => sim.similarity > 0.5)  
+          .slice(0, 15)
+          .map((sim) => docsWithContent[sim.index])  
+
+
+          return sortedDocs;
+};
 
   return RunnableSequence.from([
     RunnableParallel.from({
@@ -97,10 +131,10 @@ const createBasicWebSearchAnsweringChain =(llm:BaseChatModel,embeddings:Embeddin
             }),
               basicWebSearchRetrieverChain
                .pipe(rerankDocs)
-               .pipe(processDocs)
                .withConfig({
-                runName: "WebSearchSourceRetriever"
+                runName: "FinalSourceRetriever"
                })
+               .pipe(processDocs)
         ]),
     }),
     ChatPromptTemplate.fromMessages([
@@ -111,7 +145,7 @@ const createBasicWebSearchAnsweringChain =(llm:BaseChatModel,embeddings:Embeddin
     llm,
     strParser,
 ]).withConfig({
-   runName: "WebSearchResponseGenerator"
+   runName: "FinalResponseGenerator"
 });
 };
 

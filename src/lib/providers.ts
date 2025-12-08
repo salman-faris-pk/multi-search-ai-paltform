@@ -13,29 +13,47 @@ export const getAvailableProviders = async() => {
     if(geminaiApikey){
         try {
             models["gemini"] = {
+              "gemini-1.5-flash": new ChatGoogleGenerativeAI({
+                apiKey: geminaiApikey,
+                model: "gemini-1.5-flash",
+                temperature: 0.7,
+                maxRetries: 2,
+              }),
+
+              "gemini-1.5-flash-latest": new ChatGoogleGenerativeAI({
+                apiKey: geminaiApikey,
+                model: "gemini-1.5-flash-latest",
+                temperature: 0.7,
+                maxRetries: 2
+              }),
               "gemini-2.0-flash-lite": new ChatGoogleGenerativeAI({
                 apiKey: geminaiApikey,
                 model: "gemini-2.0-flash-lite",
                 temperature: 0.7,
+                maxRetries: 2
               }),
               "gemini-2.0-flash": new ChatGoogleGenerativeAI({
                 apiKey: geminaiApikey,
                 model: "gemini-2.0-flash",
                 temperature: 0.7,
+                maxRetries: 2
               }),
               "gemini-2.5-flash": new ChatGoogleGenerativeAI({
                 apiKey: geminaiApikey,
                 model: "gemini-2.5-flash",
                 temperature: 0.7,
+                maxRetries: 2
               }),
               "gemini-2.5-flash-lite": new ChatGoogleGenerativeAI({
                 apiKey: geminaiApikey,
                 model: "gemini-2.5-flash-lite",
                 temperature: 0.7,
+                maxRetries: 2
               }),
               "embeddings": new GoogleGenerativeAIEmbeddings({
                 apiKey: geminaiApikey,
-                modelName: "gemini-embedding-001"
+                modelName: "gemini-embedding-001",
+                maxRetries: 2
               })
             };
         } catch (error) {
@@ -58,7 +76,8 @@ export const getAvailableProviders = async() => {
                 acc[model.model] = new ChatOllama({                   // { "modelName": ChatOllamaInstance }
                     baseUrl: ollamaEndpoint,                          //This lets us dynamically support every installed Ollama model.
                     model: model.model,
-                    temperature: 0.7
+                    temperature: 0.7,
+                    maxRetries: 2
                 });
 
                 return acc;

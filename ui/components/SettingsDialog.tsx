@@ -59,7 +59,6 @@ const SettingsDialog = ({
      }finally{
       setIsUpdating(false);
       setIsOpen(false);
-
       window.location.reload();
      }
   };
@@ -103,6 +102,7 @@ const SettingsDialog = ({
                           <div className="flex flex-col space-y-1">
                              <p className="text-white/70 text-sm">LLM Provider</p>
                              <select
+                               value={config.selectedProvider} 
                                onChange={(e)=> setConfig({
                                  ...config,
                                  selectedProvider: e.target.value,
@@ -111,9 +111,9 @@ const SettingsDialog = ({
                                className="bg-[#111111] px-3 py-2 flex items-center overflow-hidden border border-[#1C1C1C] text-white rounded-lg text-sm"
                              >
                                {Object.keys(config.providers).map((provider) => (
-                                  <option key={provider}
+                                  <option 
+                                    key={provider}
                                     value={provider}
-                                    selected={provider === config.selectedProvider}
                                   >
                                     {provider.charAt(0).toUpperCase() + provider.slice(1)}
                                   </option>
@@ -126,6 +126,7 @@ const SettingsDialog = ({
                            <div className="flex flex-col space-y-1">
                              <p className="text-white/70 text-sm">Chat Model</p>
                              <select
+                               value={config.selectedChatModel}
                                onChange={(e)=> setConfig({
                                  ...config,
                                  selectedChatModel: e.target.value
@@ -135,9 +136,9 @@ const SettingsDialog = ({
                               {config.providers[config.selectedProvider] ? (
                                  config.providers[config.selectedProvider].length > 0 ? (
                                   config.providers[config.selectedProvider].map((model) => (
-                                      <option key={model}
+                                      <option 
+                                        key={model}
                                         value={model}
-                                        selected={model === config.selectedChatModel}
                                       >
                                          {model}
                                       </option>

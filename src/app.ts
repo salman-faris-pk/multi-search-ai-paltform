@@ -8,7 +8,7 @@ import { startWebSocketServer } from "./websocket/index.js";
 import { getPort } from "./config.js"
 
 
-const PORT= getPort()
+const PORT= getPort();
 
 const app = express();
 const server=http.createServer(app);
@@ -17,7 +17,9 @@ const server=http.createServer(app);
 app.use(express.json());
 
 const corsOptions={
-  origin:"*"
+  origin:"*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 app.use(cors(corsOptions))
 

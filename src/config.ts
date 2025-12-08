@@ -70,7 +70,10 @@ export const updateConfig = (config: RecursivePartial<Config>) =>  {
       }
    };
 
+    const tomlString = toml.stringify(config).replace(/(\d)_(\d)/g, '$1$2');
+  
+
      //Save new updated config back to file
-     fs.writeFileSync(path.join(__dirname, `../${configFile}`), toml.stringify(config));
+     fs.writeFileSync(path.join(__dirname, `../${configFile}`), tomlString);
 };
 

@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { BaseMessage } from "@langchain/core/messages"
 import { RunnableSequence,RunnableLambda, RunnableParallel} from "@langchain/core/runnables"
 import { PromptTemplate } from "@langchain/core/prompts"

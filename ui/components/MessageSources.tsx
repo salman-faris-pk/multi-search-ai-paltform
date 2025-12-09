@@ -25,7 +25,7 @@ const MessageSources = ({ sources }: { sources: Document[] }) => {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-      {sources.slice(0, 3).map((source, i) => (
+      {sources&&sources.slice(0, 3).map((source, i) => (
         <Link
           href={source.metadata.url}
           key={i}

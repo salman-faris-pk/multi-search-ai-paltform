@@ -1,4 +1,4 @@
-FROM node:buster-slim
+FROM node:22-slim
 
 
 

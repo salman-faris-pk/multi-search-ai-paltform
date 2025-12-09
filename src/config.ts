@@ -18,6 +18,7 @@ const configFile= "config.toml"
     API_KEYS: {
       GEMINI: string;
       GROQ: string;
+      OPENAI: string;
     },
     API_ENDPOINTS: {
       SEARXNG_API_URL: string;
@@ -39,6 +40,8 @@ export const getSimilarityMeasure = () => loadConfig().GENERAL.SIMILARITY_MEASUR
 export const getGeminaiApiKey = () => loadConfig().API_KEYS.GEMINI;
 
 export const getGroqApiKey = () => loadConfig().API_KEYS.GROQ;
+
+export const getOpenAiApiKey = () => loadConfig().API_KEYS.OPENAI;
 
 export const getSearxngApiEndpoint = () => loadConfig().API_ENDPOINTS.SEARXNG_API_URL;
 

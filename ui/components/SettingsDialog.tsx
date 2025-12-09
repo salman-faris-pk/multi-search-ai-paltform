@@ -10,6 +10,7 @@ interface SettingsType {
   selectedChatModel: string;
   geminiApiKey: string | null;
   grokApiKey?: string;
+  openAIApiKey?:string;
   ollamaApiUrl: string;
 };
 
@@ -165,7 +166,7 @@ const SettingsDialog = ({
                            <p className="text-white/70 text-sm">Gemeni API Key</p>
                            <input
                              type="text"
-                             defaultValue={config?.geminiApiKey || "No API key set"}
+                             defaultValue={config?.geminiApiKey || "No API key set,Please add one!"}
                              onChange={(e)=> setConfig({
                                 ...config,
                                 geminiApiKey: e.target.value
@@ -196,7 +197,7 @@ const SettingsDialog = ({
                     <p className="text-white/70 text-sm">GROQ API Key</p>
                     <input
                       type="text"
-                      defaultValue={config?.grokApiKey}
+                      defaultValue={config?.grokApiKey || "No API key set,Please add one!"}
                       onChange={(e) =>
                         setConfig({
                           ...config,
@@ -207,6 +208,24 @@ const SettingsDialog = ({
                     />
                   </div>
                   )}
+
+                  {config?.selectedProvider === "openai" && (
+                       <div className="flex flex-col space-y-1">
+                    <p className="text-white/70 text-sm">OpenAi API Key</p>
+                    <input
+                      type="text"
+                      defaultValue={config?.openAIApiKey || "No API key set,Please add one!"}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          openAIApiKey: e.target.value,
+                        })
+                      }
+                      className="bg-[#111111] px-3 py-2 flex items-center overflow-hidden border border-[#1C1C1C] text-white rounded-lg text-sm"
+                    />
+                  </div>
+                  )}
+
 
                   {isLoading && (
                   <div className="w-full flex items-center justify-center mt-6  text-white/70 py-6">

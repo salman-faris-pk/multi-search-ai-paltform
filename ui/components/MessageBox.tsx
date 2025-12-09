@@ -146,7 +146,6 @@ const MessageBox = ({
                   chat_history={history.slice(0, messageIndex - 1)}
                 />
                 
-                {/**search video */}
                 <Searchvideos 
                   chat_history={history.slice(0, messageIndex - 1)}
                   query={history[messageIndex - 1].content}

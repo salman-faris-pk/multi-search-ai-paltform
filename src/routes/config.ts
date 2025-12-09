@@ -1,6 +1,6 @@
 import express from "express";
 import { getAvailableProviders } from "../lib/providers.js";
-import { getChatModel, getChatModelProvider, getGeminaiApiKey, getOllamaApiEndpoint, updateConfig } from "../config.js";
+import { getChatModel, getChatModelProvider, getGeminaiApiKey, getGroqApiKey, getOllamaApiEndpoint, getOpenAiApiKey, updateConfig } from "../config.js";
 
 
 const router = express.Router();
@@ -24,11 +24,13 @@ router.get("/",async(_,res)=>{
      config["selectedProvider"]=getChatModelProvider();
      config["selectedChatModel"]=getChatModel();
      config["ollamaApiUrl"] = getOllamaApiEndpoint();
-     config["geminiApiKey"] =getGeminaiApiKey();
+     config["geminiApiKey"] = getGeminaiApiKey();
+     config["grokApiKey"]=getGroqApiKey();
+     config["openAIApiKey"]=getOpenAiApiKey();
 
-      res.status(200).json(config);
+  
+     res.status(200).json(config);
 });
-
 
 
 router.post("/", async (req, res) => {
@@ -42,6 +44,8 @@ router.post("/", async (req, res) => {
        },
       API_KEYS: {
         GEMINI: config.geminiApiKey,
+        GROQ: config.grokApiKey,
+        OPENAI: config.openAIApiKey
       },
      API_ENDPOINTS: {
        OLLAMA: config.ollamaApiUrl
@@ -56,3 +60,4 @@ router.post("/", async (req, res) => {
 
 
 export default router;
+

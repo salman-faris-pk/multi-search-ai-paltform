@@ -1,4 +1,4 @@
-FROM node:buster-slim
+FROM node:22-slim
 
 ARG SEARXNG_API_URL
 ENV SEARXNG_API_URL=${SEARXNG_API_URL}

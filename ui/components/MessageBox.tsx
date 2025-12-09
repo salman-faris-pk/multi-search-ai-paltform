@@ -7,6 +7,7 @@ import ReactMarkdown from "react-markdown";
 import Rewrite from "@/messageActions/Rewrite";
 import Copy from "@/messageActions/Copy";
 import SearchImages from "./SearchImages";
+import Searchvideos from "./Searchvideos";
 
 
 interface MessageBoxProps{
@@ -30,7 +31,6 @@ const MessageBox = ({
     rewrite,
     sendMessage
    }:MessageBoxProps) => {
-
 
      const { parsedMessage, speechMessage, suggestions } = useMemo(() => {
 
@@ -143,11 +143,14 @@ const MessageBox = ({
           <div className="lg:sticky lg:top-20 flex flex-col items-center space-y-3 w-full lg:w-3/12 z-30 h-full pb-4">
                 <SearchImages 
                   query={history[messageIndex - 1].content} 
-                  chat_history={history.slice(0, messageIndex -1)}
+                  chat_history={history.slice(0, messageIndex - 1)}
                 />
                 
                 {/**search video */}
-                
+                <Searchvideos 
+                  chat_history={history.slice(0, messageIndex - 1)}
+                  query={history[messageIndex - 1].content}
+                />
 
           </div>
 

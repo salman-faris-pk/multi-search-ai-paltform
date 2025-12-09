@@ -27,7 +27,7 @@ const SearchImages = ({
   const [slides, setSlides] = useState<SlideImage[]>([]);
 
 
-  const normalizeImageUrl = (url: string): string => {
+  const normalizeUrl = (url: string): string => {
   if (url.startsWith('//')) {
     return `https:${url}`;
   }
@@ -64,7 +64,7 @@ const SearchImages = ({
 
        const normalizedImages = data.images.map((image: ImageType) => ({
         ...image,
-        img_src: normalizeImageUrl(image.img_src)
+        img_src: normalizeUrl(image.img_src)
       }));
       
       setImages(normalizedImages);

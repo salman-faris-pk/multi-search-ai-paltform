@@ -25,12 +25,7 @@ const extractVideosFromResults = async (query: string) => {
     return res.results
          .filter(result => result.thumbnail && result.url && result.title && result.iframe_src)
          .slice(0, 10)
-         .map((result) => ({
-            img_src: result.thumbnail,
-            url: result.url,
-            title: result.title,
-            iframe_src: result.iframe_src
-         }));
+         .map(({ thumbnail,url,title,iframe_src}) => ({ thumbnail,url,iframe_src,title}));
 };
 
 

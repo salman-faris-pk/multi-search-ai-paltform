@@ -37,7 +37,7 @@ export const getAvailableProviders = async () => {
           temperature: 0.7,
           maxRetries: 2,
         }),
-        "gemini-2.0-flash-lite": new ChatGoogleGenerativeAI({
+        "Gemini-2.0-flash-lite": new ChatGoogleGenerativeAI({
           apiKey: geminaiApikey,
           model: "gemini-2.0-flash-lite",
           temperature: 0.7,

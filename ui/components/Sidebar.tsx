@@ -43,7 +43,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-20 lg:flex-col">
         <div className="flex grow flex-col items-center justify-between gap-y-5 overflow-y-auto bg-[#111111] px-2 py-8">
-          <Link href="/">
+          <Link href="/"  onClick={() => (window.location.href = "/")}>
             <SquareIcon className="text-white cursor-pointer" />
           </Link>
           <nav className="flex flex-col items-center gap-y-3 w-full">

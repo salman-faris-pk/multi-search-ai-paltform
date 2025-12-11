@@ -10,7 +10,6 @@ import type { BaseChatModel } from "@langchain/core/language_models/chat_models"
 import type { Embeddings } from "@langchain/core/embeddings";
 
 
-
 type Message = {
   type: string;
   content: string;
@@ -73,6 +72,7 @@ export const handleMessage = async (
 ) => {
   try {
     const parsedMessage = JSON.parse(message) as Message;
+        
     const id = crypto.randomUUID().replace(/-/g, "").substring(0, 10);
 
     if (!parsedMessage.content) {
@@ -93,8 +93,11 @@ export const handleMessage = async (
       }
     });
 
+
     if (parsedMessage.type === "message") {
+      
       const handler = searchHandlers[parsedMessage.focusMode];  //Selecting the correct handler using focsmode and choosing the serach functions
+      
       if (handler) {
         const emitter = handler(parsedMessage.content, history,llm,embeddings);   //passing data to chooses searchhandler
 

@@ -1,4 +1,3 @@
-import { Callbacks } from "@langchain/core/callbacks/manager";
 import { BaseOutputParser } from "@langchain/core/output_parsers";
 
 
@@ -41,6 +40,7 @@ class LineListOutputParser extends BaseOutputParser<String[]> {
           return lines;
      };
 
+   
 
      getFormatInstructions(): string {
           throw new Error("Not implemented")

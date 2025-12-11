@@ -1,7 +1,7 @@
 import { RefObject, useMemo } from "react";
 import { Message } from "./ChatWindow";
 import { cn } from "@/lib/utils";
-import { BookCopy, Disc3, Share, StopCircle, Volume2 } from "lucide-react";
+import { BookCopy, Disc3, Layers3, Plus, Share, StopCircle, Volume2 } from "lucide-react";
 import MessageSources from "./MessageSources";
 import ReactMarkdown from "react-markdown";
 import Rewrite from "@/messageActions/Rewrite";
@@ -32,45 +32,37 @@ const MessageBox = ({
     sendMessage
    }:MessageBoxProps) => {
 
-     const { parsedMessage, speechMessage, suggestions } = useMemo(() => {
 
-    let parsedMsg = message.content;
-    let speechMsg = message.content;
-    let suggestionList: string[] = [];
+     const { parsedMessage, speechMessage } = useMemo(() => {
 
-    if (
-         message.role === "assistant" && 
-         message?.sources && 
+       let parsedMsg = message.content;
+       let speechMsg = message.content;
+
+       if (
+         message.role === "assistant" &&
+         message?.sources &&
          message.sources.length > 0
-        ) {
+       ) {
 
-      const regex = /\[(\d+)\]/; //Match any string that does NOT contain patterns like [number].
-      
-      speechMsg = message.content.replace(regex, "");
-      
-      parsedMsg = message.content.replace(
-        regex,
-        (_, number) => {
-          const url = message.sources?.[number - 1]?.metadata?.url || "#";
-          return ` [${number}](${url}) `;
-        }
-      );
-      
-      suggestionList = [
-        "tell me about his products at apple",
-        "tell me about this personal journey",
-      ];
-    }
+        const regex = /\[(\d+)\]/g; //Match any string that does NOT contain patterns like [number].
 
-    return {
-      parsedMessage: parsedMsg,
-      speechMessage: speechMsg,
-      suggestions: suggestionList
-    };
-  }, [message.content, message.sources, message.role]);
+         speechMsg = message.content.replace(regex, "");
 
-  const { speechStatus,start,stop}=useSpeech({ text: speechMessage});
+         parsedMsg = message.content.replace(regex, (_, number) => {
+           const url = message.sources?.[number - 1]?.metadata?.url || "#";
+           return ` [${number}](${url}) `;
+         });
 
+       };
+       
+       return {
+         parsedMessage: parsedMsg,
+         speechMessage: speechMsg,
+       };
+     }, [message.content, message.sources, message.role]);
+
+
+    const { speechStatus,start,stop}=useSpeech({ text: speechMessage});
 
   return (
     <div>
@@ -138,15 +130,16 @@ const MessageBox = ({
                       initilaMessageContent={message.content}
                       message={message}
                     />
-                    <button className="p-2 text-white/70 rounded-xl hover:bg-[#1c1c1c] transition duration-200 hover:text-white"
-                       onClick={() => {
-                         if(speechStatus === "started"){
-                           stop();
-                         }else{
+                    <button
+                      className="p-2 text-white/70 rounded-xl hover:bg-[#1c1c1c] transition duration-200 hover:text-white"
+                      onClick={() => {
+                        if (speechStatus === "started") {
+                          stop();
+                        } else {
                           start();
-                         }
-                       }}
-                      >
+                        }
+                      }}
+                    >
                       {speechStatus === "started" ? (
                         <StopCircle size={18} />
                       ) : (
@@ -157,8 +150,35 @@ const MessageBox = ({
                 </div>
               )}
 
-              
-              {/*sugestions*/}
+              {isLast &&
+                message.suggestions &&
+                message.suggestions.length > 0 &&
+                message.role === "assistant" &&
+                !loading && (
+                  <>
+                    <div className="mt-4 pt-4 border-t border-[#1C1C1C]">
+                      <div className="flex flex-row items-center space-x-2 mb-3 text-white">
+                        <Layers3 />
+                        <h3 className="text-xl font-medium">Related</h3>
+                      </div>
+
+                      <div className="flex flex-col space-y-2">
+                        {message.suggestions.map((suggestion, i) => (
+                          <button
+                            key={i}
+                            onClick={() => sendMessage(suggestion)}
+                            className="w-full flex flex-row justify-between items-center px-3 py-2 
+                       rounded-lg bg-[#161616] hover:bg-[#1e1e1e] text-left 
+                       text-white/80 hover:text-white transition"
+                          >
+                            <span className="text-sm">{suggestion}</span>
+                            <Plus size={18} className="text-[#24A0ED]" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
             </div>
           </div>
 
@@ -180,3 +200,4 @@ const MessageBox = ({
 }
 
 export default MessageBox
+

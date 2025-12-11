@@ -61,7 +61,7 @@ const createBasicWebSearchRetrieverChain =(llm: BaseChatModel) =>{
         const res=await searchSearxng(input, {
             language: 'en'
         });
-      
+
         const documents= res.results.map((result) =>  new Document({
             pageContent: result.content,
             metadata: {

@@ -5,6 +5,9 @@ const formatChatHistoryAsString = (history: BaseMessage[]) => {  //here each mes
   return history
     .map((message) => `${message.type}: ${message.content}`)
     .join("\n");
+    
 };
 
 export default formatChatHistoryAsString;
+
+

@@ -22,20 +22,20 @@ Conversation:
 {chat_history}
 `;
 
+
 type SuggestionGeneratorInput = {
   chat_history: BaseMessage[];
 };
 
 
 const outputParser = new LineListOutputParser({
-    key: "suggestions"
+    key: "suggestions",
 });
 
 const createSuggestionGenerator =(llm:BaseChatModel) => {
     return RunnableSequence.from([
         RunnableParallel.from({
-            chat_history: (input: SuggestionGeneratorInput) => 
-                 formatChatHistoryAsString(input.chat_history)
+            chat_history: (input: SuggestionGeneratorInput) => formatChatHistoryAsString(input.chat_history)
         }),
         PromptTemplate.fromTemplate(suggestionGeneratorPrompt),
         llm,
@@ -50,7 +50,7 @@ const generateSuggestions =(
 ) => {
 
     const suggestionChain=createSuggestionGenerator(llm);
-    return suggestionChain.invoke(input);
+      return suggestionChain.invoke(input);
 };
 
 

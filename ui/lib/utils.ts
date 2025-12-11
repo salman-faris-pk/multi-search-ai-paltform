@@ -28,3 +28,4 @@ export const formatTimeDifference = (date1: Date, date2: Date): string => {
     return `${years} year${years !== 1 ? "s" : ""}`;
   }
 };
+

@@ -9,15 +9,30 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   try {
-    let { chat_history, chat_model, chat_model_provider } = req.body;
+    
+    let { chat_history} = req.body;
 
-    chat_history = chat_history.map((msg: any) => {
-      if (msg.role === "user") {
-        return new HumanMessage(msg.content);
-      } else if (msg.rol === "assistant") {
-        return new AIMessage(msg.content);
-      }
-    });
+    chat_history = chat_history
+      .map((msg: any) => {
+        if (msg && msg.role === "user") {
+          return new HumanMessage({
+            content: msg.content || "",
+          });
+        } else if (msg && msg.role === "assistant") {
+          return new AIMessage({
+            content: msg.content || "",
+          });
+        }
+        return null;
+      })
+      .filter(Boolean); 
+
+
+    if (!chat_history || chat_history.length === 0) {
+      return res.status(400).json({ 
+        message: "No valid messages in chat_history" 
+      });
+    }
 
     const models = await getAvailableProviders();
     const provider = getChatModelProvider();
@@ -36,13 +51,16 @@ router.post("/", async (req, res) => {
 
     const suggestions = await generateSuggestions({ chat_history }, llm);
 
-    res.status(200).json({ suggestions: suggestions });
+    res.status(200).json({ suggestions });
+
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: `An error has occurred. : ${err.message}` });
-    console.log(err.message);
+    res.status(500).json({ message: `An error has occurred. : ${err.message}` });
+     console.error('Full error:', err);
+     console.error('Error stack:', err?.stack);
   }
 });
+
+
+
 
 export default router;

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import EmptyChat from "./EmptyChat";
 import Chat from "./Chat";
 import Navbar from "./Navbar";
+import { getSuggestions } from "@/lib/actions";
 
 export type Message = {
   id: string;
@@ -51,7 +52,7 @@ const ChatWindow = () => {
   }, [messages]);
 
 
-  const sendMessage = async (message: string) => {
+  const handleSendMessage = async (message: string) => {
     if (loading) return;
 
     setLoading(true);
@@ -139,13 +140,31 @@ const ChatWindow = () => {
           ["human", message],   //when message  chunks and all users query added to this state
           ["assistant", receivedMessage],  //all assistant replies too
         ]);
+        
         ws?.removeEventListener("message", messageHandler);
         setLoading(false);
 
+        const lastMsg= messagesRef.current[messagesRef.current.length - 1];
+                
+        if(lastMsg.role === "assistant" &&  lastMsg.sources && lastMsg.sources.length > 0 && !lastMsg.suggestions){
+
+            const suggestions=await getSuggestions(messagesRef.current);
+
+               setMessages((prev) => 
+                   prev.map((msg) => {
+                    if(msg.id === lastMsg.id){
+                      return { ...msg, suggestions:suggestions}
+                    }
+
+                    return msg;
+                 })
+               )
+        }
       }
     };
 
     ws?.addEventListener("message", messageHandler);
+  
   };
 
 
@@ -165,7 +184,7 @@ const ChatWindow = () => {
         return [...prev.slice(0,messages.length > 2 ? index - 1 : 0)]
       });
 
-      sendMessage(message.content)
+      handleSendMessage(message.content)
   };
 
   
@@ -178,13 +197,13 @@ const ChatWindow = () => {
             messages={messages}
             messageAppeared={messageAppeared}
             loading={loading}
-            sendMessage={sendMessage}
+            sendMessage={handleSendMessage}
             rewrite={regenerate}
           />
         </>
       ) : (
         <EmptyChat
-          sendMessage={sendMessage}
+          sendMessage={handleSendMessage}
           focusMode={focusMode}
           setFocusMode={setFocusMode}
         />

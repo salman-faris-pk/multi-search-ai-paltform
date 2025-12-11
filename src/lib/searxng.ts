@@ -41,7 +41,7 @@ export const searchSearxng =async(query:string,opts?: SearxngSearchOption)=>{
     
     const results: SearxngSearchResult[]= res.data.results;
     const suggestions : string[]= res.data.suggestions;
-
+     
     return { results,suggestions }
 
 };

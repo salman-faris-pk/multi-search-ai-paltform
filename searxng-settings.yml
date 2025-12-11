@@ -28,6 +28,7 @@ brand:
   #     About: "https://searxng.org"
 
 search:
+  suggestions: true
   # Filter results. 0: None, 1: Moderate, 2: Strict
   safe_search: 0
   # Existing autocomplete backends: "dbpedia", "duckduckgo", "google", "yandex", "mwmbl",
@@ -36,6 +37,7 @@ search:
   autocomplete: "google"
   # minimun characters to type before autocompleter starts
   autocomplete_min: 4
+
   # Default search language - leave blank to detect from browser information or
   # use codes from 'languages.py'
   default_lang: "auto"

@@ -39,8 +39,8 @@ const createSuggestionGenerator =(llm:BaseChatModel) => {
         }),
         PromptTemplate.fromTemplate(suggestionGeneratorPrompt),
         llm,
-        outputParser
-    ]);
+        outputParser  //Convert unstructured LLM text → structured JavaScript data
+    ]); 
 };
 
 
